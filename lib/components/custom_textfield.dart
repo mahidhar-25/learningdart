@@ -9,7 +9,8 @@ class CustomTextField extends StatelessWidget {
       this.obscureText = false,
       this.hintText,
       this.enableSuggestions = true,
-      this.autocorrect = true});
+      this.autocorrect = true,
+      this.keyboardType = TextInputType.text});
 
   // Parameters to make the widget reusable
   final String labelText;
@@ -18,6 +19,7 @@ class CustomTextField extends StatelessWidget {
   final String? hintText;
   final bool? enableSuggestions;
   final bool? autocorrect;
+  final TextInputType? keyboardType;
 
   @override
   Widget build(BuildContext context) {
@@ -29,6 +31,7 @@ class CustomTextField extends StatelessWidget {
             vertical: 10, // small margin on top and bottom
           ), // You can modify width as needed or pass as argument
           child: TextField(
+            keyboardType: keyboardType,
             enableSuggestions: enableSuggestions!, // Enable auto-suggestions
             autocorrect: autocorrect!, // Enable auto-correct
             controller: controller,

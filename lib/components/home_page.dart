@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:learningdart/components/simple_interest.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -40,7 +41,7 @@ class _HomePageState extends State<HomePage> {
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: GridView.count(
-          crossAxisCount: 2, // Two columns
+          crossAxisCount: 3, // Two columns
           crossAxisSpacing: 10,
           mainAxisSpacing: 10,
           children: [
@@ -48,7 +49,7 @@ class _HomePageState extends State<HomePage> {
             _buildElevatedBox(
               context,
               'assets/simpleInterest.jpeg', // Replace with a logo/icon for simple interest
-              'Simple Interest Calculator',
+              'S.I Calculator',
               () {
                 // Navigation to Simple Interest Calculator
                 Navigator.push(
@@ -63,7 +64,7 @@ class _HomePageState extends State<HomePage> {
             _buildElevatedBox(
               context,
               'assets/compoundInterest.jpeg', // Replace with a logo/icon for compound interest
-              'Compound Interest Calculator',
+              'C.I Calculator',
               () {
                 // Navigation to Compound Interest Calculator
                 Navigator.push(
@@ -101,11 +102,11 @@ class _HomePageState extends State<HomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Image.asset(imagePath, height: 50), // Logo/icon image
+            Image.asset(imagePath, height: 70), // Logo/icon image
             const SizedBox(height: 10),
             Text(
               label,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
               textAlign: TextAlign.center,
             ),
           ],
@@ -116,18 +117,6 @@ class _HomePageState extends State<HomePage> {
 }
 
 // Placeholder for Simple Interest Calculator Page
-class SimpleInterestCalculatorPage extends StatelessWidget {
-  const SimpleInterestCalculatorPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Simple Interest Calculator')),
-      body:
-          const Center(child: Text('Simple Interest Calculator Functionality')),
-    );
-  }
-}
 
 // Placeholder for Compound Interest Calculator Page
 class CompoundInterestCalculatorPage extends StatelessWidget {
