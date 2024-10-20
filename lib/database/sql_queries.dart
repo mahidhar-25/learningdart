@@ -17,8 +17,10 @@ class SqlQueries {
 
   static const String getUser = '''
     SELECT * FROM users
-    WHERE username = ? AND password = ?;
+    WHERE username = ?;
   ''';
-
+  static const String checkUserExists = '''
+    SELECT * FROM users WHERE username = ?
+  ''';
   // Add more queries as needed
 }

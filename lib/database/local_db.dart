@@ -41,39 +41,80 @@ class LocalDatabaseAuthentication {
   }
 
   // Function to insert a new user
-  Future<void> insertNewUser(String username, String password) async {
+  Future<Map<String, dynamic>> insertNewUser(
+      String username, String password) async {
     try {
       final db = await database;
-      await db.rawInsert(SqlQueries.insertUser, [username, password]);
-      logger.i('User inserted successfully');
+
+      // Query to check if the user already exists
+      final List<Map<String, dynamic>> existingUser =
+          await db.rawQuery(SqlQueries.checkUserExists, [username]);
+
+      if (existingUser.isNotEmpty) {
+        // User already exists, return the user's data
+        final userId = existingUser[0]['id'];
+        logger.i('User already exists with ID: $userId');
+        return {
+          'success': false,
+          'message': 'User already exists',
+          'user': existingUser[0], // Return user details
+        };
+      }
+
+      // Insert new user if not exists
+      final int newUserId =
+          await db.rawInsert(SqlQueries.insertUser, [username, password]);
+      logger.i('User inserted successfully with ID: $newUserId');
+
+      // Return success response with the new user's details
+      return {
+        'success': true,
+        'message': 'User inserted successfully',
+        'user': {
+          'id': newUserId,
+          'username': username,
+        }
+      };
     } catch (e) {
+      // Handle any errors
       logger.e('Error inserting user: $e');
+      return {
+        'success': false,
+        'message': 'Error inserting user',
+        'error': e.toString(),
+      };
     }
   }
 
   // Function to verify user credentials
-  Future<bool> verifyUser(String username, String password) async {
+  Future<Map<String, dynamic>> verifyUser(
+      String username, String password) async {
     try {
       final db = await database;
       final List<Map<String, dynamic>> result =
-          await db.rawQuery(SqlQueries.getUser, [username, password]);
+          await db.rawQuery(SqlQueries.getUser, [username]);
 
       if (result.isNotEmpty) {
         final storedPassword = result[0]['password'];
         if (verifyPassword(password, storedPassword)) {
           logger.i('User verified successfully');
-          return true;
+          return {
+            'id': result[0]['id'],
+            'username': result[0]['username'],
+            'success': true,
+            'text': 'User verified successfully'
+          };
         } else {
           logger.e('Invalid password');
-          return false;
+          return {'success': false, 'text': 'Invalid password'};
         }
       } else {
         logger.w('User not found');
-        return false;
+        return {'success': false, 'text': 'User not found'};
       }
     } catch (e) {
       logger.e('Error verifying user: $e');
-      return false;
+      return {'success': false, 'text': 'Error verifying user: $e'};
     }
   }
 

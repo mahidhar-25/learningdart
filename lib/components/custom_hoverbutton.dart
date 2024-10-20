@@ -58,8 +58,12 @@ class _HoverButtonState extends State<HoverButton> {
                   )
                 : SizedBox(
                     width: widget.width,
-                    child: FilledButton(
+                    child: ElevatedButton(
                       onPressed: widget.onPressed,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor:
+                            const Color.fromARGB(255, 230, 87, 144),
+                      ),
                       child: Padding(
                         padding: widget.padding!,
                         child: Text(
