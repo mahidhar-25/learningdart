@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:learningdart/components/custom_textfield.dart';
 import 'package:intl/intl.dart';
+import 'package:learningdart/components/interest_infoaccordian.dart';
 import 'package:learningdart/components/logger_component.dart';
+import 'package:learningdart/components/piechart_widget.dart';
 
 class SimpleInterestCalculatorPage extends StatefulWidget {
   const SimpleInterestCalculatorPage({super.key});
@@ -15,11 +17,15 @@ class _SimpleInterestCalculatorPageState
     extends State<SimpleInterestCalculatorPage> {
   late final TextEditingController _amount;
   late final TextEditingController _interestRate;
+  late final FocusNode _amountFocus;
+  late final FocusNode _interestRateFocus;
 
   @override
   void initState() {
     _amount = TextEditingController();
     _interestRate = TextEditingController();
+    _amountFocus = FocusNode();
+    _interestRateFocus = FocusNode();
     super.initState();
   }
 
@@ -27,24 +33,26 @@ class _SimpleInterestCalculatorPageState
   void dispose() {
     _amount.dispose();
     _interestRate.dispose();
+    _amountFocus.dispose();
+    _interestRateFocus.dispose();
     super.dispose();
   }
-// Controllers for the amount and interest rate
 
   // Variables for the start and end dates
   DateTime? _startDate;
   DateTime? _endDate;
+  Map<String, dynamic>? _calculatedInterest;
 
-  // Method to show a date picker
   Future<void> _selectDate(BuildContext context,
       {required bool isStartDate}) async {
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: DateTime.now(), // Default to today
-      firstDate: DateTime(2000), // Earliest selectable date
-      lastDate: DateTime(2101), // Latest selectable date
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2101),
     );
     if (picked != null && picked != (isStartDate ? _startDate : _endDate)) {
+      if (!mounted) return;
       setState(() {
         if (isStartDate) {
           _startDate = picked;
@@ -55,73 +63,125 @@ class _SimpleInterestCalculatorPageState
     }
   }
 
+  bool calculated = false;
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Simple Interest Calculator')),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              // Custom text fields for amount and interest rate
-              CustomTextField(
-                labelText: 'Amount',
-                controller: _amount,
-                keyboardType: TextInputType.number,
-              ),
-              CustomTextField(
-                labelText: 'Interest Rate',
-                controller: _interestRate,
-                keyboardType: TextInputType.number,
-              ),
-              // Start date field
-              GestureDetector(
-                onTap: () => _selectDate(context, isStartDate: true),
-                child: AbsorbPointer(
-                  child: CustomTextField(
-                    labelText: 'Start Date',
-                    controller: TextEditingController(
-                        text: _startDate == null
-                            ? ''
-                            : DateFormat('yyyy-MM-dd').format(_startDate!)),
-                    keyboardType: TextInputType.none, // Disable keyboard
+    return GestureDetector(
+      onTap: () =>
+          FocusScope.of(context).unfocus(), // Dismiss keyboard on tap outside
+      child: Scaffold(
+        appBar: AppBar(title: const Text('Simple Interest Calculator')),
+        body: SingleChildScrollView(
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  CustomTextField(
+                    labelText: 'Amount',
+                    controller: _amount,
+                    keyboardType: TextInputType.number,
+                    focusNode: _amountFocus, // Only focuses when user taps
                   ),
-                ),
-              ), // Space between fields
-              // End date field
-              GestureDetector(
-                onTap: () => _selectDate(context, isStartDate: false),
-                child: AbsorbPointer(
-                  child: CustomTextField(
-                    labelText: 'End Date',
-                    controller: TextEditingController(
-                        text: _endDate == null
-                            ? ''
-                            : DateFormat('yyyy-MM-dd').format(_endDate!)),
-                    keyboardType: TextInputType.none, // Disable keyboard
+                  CustomTextField(
+                    labelText: 'Interest Rate',
+                    controller: _interestRate,
+                    keyboardType: TextInputType.number,
+                    focusNode:
+                        _interestRateFocus, // Same behavior for interest rate field
                   ),
-                ),
+                  GestureDetector(
+                    onTap: () => _selectDate(context, isStartDate: true),
+                    child: AbsorbPointer(
+                      child: CustomTextField(
+                        labelText: 'Start Date',
+                        controller: TextEditingController(
+                            text: _startDate == null
+                                ? ''
+                                : DateFormat('yyyy-MM-dd').format(_startDate!)),
+                        keyboardType: TextInputType.none,
+                      ),
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () => _selectDate(context, isStartDate: false),
+                    child: AbsorbPointer(
+                      child: CustomTextField(
+                        labelText: 'End Date',
+                        controller: TextEditingController(
+                            text: _endDate == null
+                                ? ''
+                                : DateFormat('yyyy-MM-dd').format(_endDate!)),
+                        keyboardType: TextInputType.none,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  ElevatedButton(
+                    onPressed: () {
+                      _calculatedInterest = calculateSimpleInterest(
+                          double.parse(_amount.text),
+                          double.parse(_interestRate.text),
+                          _startDate!,
+                          _endDate!);
+                      setState(() {
+                        calculated = true;
+                      });
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color.fromARGB(255, 62, 165,
+                          177), // Set your desired background color
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(
+                            8), // Slightly rounded corners
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 24, vertical: 12), // Adjust padding
+                    ),
+                    child: const Text(
+                      'Calculate Simple Interest',
+                      style: TextStyle(
+                        fontSize: 16, // Optional: Adjust text size
+                        color: Colors.white, // Text color
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+                  calculated && _calculatedInterest != null
+                      ? Column(
+                          children: [
+                            PieChartSample2(
+                              principalAmount:
+                                  _calculatedInterest?['principalAmount'] ??
+                                      0.0,
+                              interestAmount:
+                                  _calculatedInterest?['interestAmount'] ?? 0.0,
+                            ),
+                            InterestInfoAccordion(
+                              isExpanded: true,
+                              startDate: _startDate!,
+                              endDate: _endDate!,
+                              principalAmount:
+                                  _calculatedInterest?['principalAmount'] ??
+                                      0.0,
+                              interestAmount:
+                                  _calculatedInterest?['interestAmount'] ?? 0.0,
+                              totalAmount:
+                                  _calculatedInterest?['totalAmount'] ?? 0.0,
+                              interestRate: double.parse(_interestRate.text),
+                              totalTime: _calculatedInterest?['timeDifference']
+                                      ['totalTime'] ??
+                                  "",
+                            ),
+                          ],
+                        )
+                      : Container(), // or SizedBox() for an empty widget when not calculated
+                ],
               ),
-              const SizedBox(height: 20), // Space for button
-              ElevatedButton(
-                onPressed: () {
-                  final simpleInterest = calculateSimpleInterest(
-                      double.parse(_amount.text),
-                      double.parse(_interestRate.text),
-                      _startDate!,
-                      _endDate!);
-                  logger.i(
-                      'Principal Amount: ${simpleInterest['principalAmount']},\n '
-                      'Interest Rate: ${simpleInterest['interestRate']},\n '
-                      'Interest Amount: ${simpleInterest['interestAmount']},\n '
-                      'Total Amount: ${simpleInterest['totalAmount']}, \n'
-                      'Time Difference: ${simpleInterest['timeDifference']['totalYears']} years, ${simpleInterest['timeDifference']['totalMonths']} months, ${simpleInterest['timeDifference']['totalDays']} days');
-                },
-                child: const Text('Calculate Simple Interest'),
-              ),
-            ],
+            ),
           ),
         ),
       ),
@@ -155,7 +215,7 @@ Map<String, dynamic> calculateDateDifference(
 
   // Calculate total difference in days
   final totalDays = endDate.difference(startDate).inDays;
-  // Total time in years (including fractional months) with 3 decimal places
+  // Total time in years (including fractional months)
   final totalYears = double.parse((totalDays / 365).toStringAsFixed(3));
   final totalMonths = double.parse((totalDays / 30).toStringAsFixed(3));
 
@@ -187,7 +247,23 @@ Map<String, dynamic> calculateDateDifference(
     }
   }
 
+  // Create a readable string for total time
+  String totalTime = '';
+  if (years > 0) {
+    totalTime += '$years ${years == 1 ? 'year' : 'years'} ';
+  }
+  if (months > 0) {
+    totalTime += '$months ${months == 1 ? 'month' : 'months'} ';
+  }
+  if (days > 0) {
+    totalTime += '$days ${days == 1 ? 'day' : 'days'}';
+  }
+
+  // Trim any trailing whitespace
+  totalTime = totalTime.trim();
+
   return {
+    'totalTime': totalTime.isEmpty ? '0 days' : totalTime,
     'totalDays': totalDays,
     'totalMonths': totalMonths,
     'totalYears': totalYears,
