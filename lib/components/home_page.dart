@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:learningdart/components/compound_interest.dart';
 import 'package:learningdart/components/simple_interest.dart';
 
 class HomePage extends StatefulWidget {
@@ -119,15 +120,3 @@ class _HomePageState extends State<HomePage> {
 // Placeholder for Simple Interest Calculator Page
 
 // Placeholder for Compound Interest Calculator Page
-class CompoundInterestCalculatorPage extends StatelessWidget {
-  const CompoundInterestCalculatorPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Compound Interest Calculator')),
-      body: const Center(
-          child: Text('Compound Interest Calculator Functionality')),
-    );
-  }
-}

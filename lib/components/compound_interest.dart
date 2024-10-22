@@ -1,21 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:learningdart/components/custom_textfield.dart';
 import 'package:intl/intl.dart';
+import 'package:learningdart/components/interest_detailslist.dart';
 import 'package:learningdart/components/interest_infoaccordian.dart';
 import 'package:learningdart/components/piechart_widget.dart';
 
-class SimpleInterestCalculatorPage extends StatefulWidget {
-  const SimpleInterestCalculatorPage({super.key});
+class CompoundInterestCalculatorPage extends StatefulWidget {
+  const CompoundInterestCalculatorPage({super.key});
 
   @override
-  State<SimpleInterestCalculatorPage> createState() =>
-      _SimpleInterestCalculatorPageState();
+  State<CompoundInterestCalculatorPage> createState() =>
+      _CompoundInterestCalculatorPageState();
 }
 
-class _SimpleInterestCalculatorPageState
-    extends State<SimpleInterestCalculatorPage> {
+class _CompoundInterestCalculatorPageState
+    extends State<CompoundInterestCalculatorPage> {
   late final TextEditingController _amount;
   late final TextEditingController _interestRate;
+  late final TextEditingController _compoundedTime;
+  late final FocusNode _compoundedFocus;
   late final FocusNode _amountFocus;
   late final FocusNode _interestRateFocus;
 
@@ -23,6 +26,8 @@ class _SimpleInterestCalculatorPageState
   void initState() {
     _amount = TextEditingController();
     _interestRate = TextEditingController();
+    _compoundedTime = TextEditingController();
+    _compoundedFocus = FocusNode();
     _amountFocus = FocusNode();
     _interestRateFocus = FocusNode();
     super.initState();
@@ -32,14 +37,18 @@ class _SimpleInterestCalculatorPageState
   void dispose() {
     _amount.dispose();
     _interestRate.dispose();
+    _compoundedTime.dispose();
+    _compoundedFocus.dispose();
     _amountFocus.dispose();
     _interestRateFocus.dispose();
+
     super.dispose();
   }
 
   // Variables for the start and end dates
   DateTime? _startDate;
   DateTime? _endDate;
+
   Map<String, dynamic>? _calculatedInterest;
 
   Future<void> _selectDate(BuildContext context,
@@ -70,7 +79,7 @@ class _SimpleInterestCalculatorPageState
       onTap: () =>
           FocusScope.of(context).unfocus(), // Dismiss keyboard on tap outside
       child: Scaffold(
-        appBar: AppBar(title: const Text('Simple Interest Calculator')),
+        appBar: AppBar(title: const Text('Compound Interest Calculator')),
         body: SingleChildScrollView(
           child: Center(
             child: Padding(
@@ -90,6 +99,13 @@ class _SimpleInterestCalculatorPageState
                     keyboardType: TextInputType.number,
                     focusNode:
                         _interestRateFocus, // Same behavior for interest rate field
+                  ),
+                  CustomTextField(
+                    labelText: 'Compounded Time(in M)',
+                    controller: _compoundedTime,
+                    keyboardType: TextInputType.number,
+                    focusNode:
+                        _compoundedFocus, // Same behavior for interest rate field
                   ),
                   GestureDetector(
                     onTap: () => _selectDate(context, isStartDate: true),
@@ -120,9 +136,10 @@ class _SimpleInterestCalculatorPageState
                   const SizedBox(height: 20),
                   ElevatedButton(
                     onPressed: () {
-                      _calculatedInterest = calculateSimpleInterest(
+                      _calculatedInterest = calculateCompoundInterest(
                           double.parse(_amount.text),
                           double.parse(_interestRate.text),
+                          int.parse(_compoundedTime.text),
                           _startDate!,
                           _endDate!);
                       setState(() {
@@ -140,7 +157,7 @@ class _SimpleInterestCalculatorPageState
                           horizontal: 24, vertical: 12), // Adjust padding
                     ),
                     child: const Text(
-                      'Calculate Simple Interest',
+                      'Calculate Compound Interest',
                       style: TextStyle(
                         fontSize: 16, // Optional: Adjust text size
                         color: Colors.white, // Text color
@@ -171,9 +188,22 @@ class _SimpleInterestCalculatorPageState
                               totalAmount:
                                   _calculatedInterest?['totalAmount'] ?? 0.0,
                               interestRate: double.parse(_interestRate.text),
-                              totalTime: _calculatedInterest?['timeDifference']
-                                      ['totalTime'] ??
-                                  "",
+                              totalTime:
+                                  _calculatedInterest?['totalTime'] ?? "",
+                            ),
+                            const SizedBox(height: 20),
+                            const Text(
+                              'Compounded Details',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            InterestDetailsList(
+                              compoundedDetails:
+                                  _calculatedInterest?['compoundedDetails'] ??
+                                      [],
+                              interstRate: _calculatedInterest?['interestRate'],
                             ),
                           ],
                         )
@@ -186,6 +216,88 @@ class _SimpleInterestCalculatorPageState
       ),
     );
   }
+}
+
+Map<String, dynamic> calculateCompoundInterest(
+    double principalAmount,
+    double interestRate, // Annual interest rate as a percentage
+    int compoundedPeriodInMonths, // Compounding period in months (e.g., 3 = quarterly, 12 = yearly)
+    DateTime startDate,
+    DateTime endDate) {
+  final Map<String, dynamic> timeDifference =
+      calculateDateDifference(startDate, endDate);
+  double currentPrincipal = principalAmount;
+  double totalInterest = 0;
+  List<Map<String, dynamic>> compoundedDetails = [];
+
+  Duration totalDuration = endDate.difference(startDate);
+  int totalDays = totalDuration.inDays;
+  int fullPeriods = totalDays ~/
+      (compoundedPeriodInMonths * 30); // Calculate number of full periods
+  int remainingDays = totalDays %
+      (compoundedPeriodInMonths * 30); // Remaining days after full periods
+
+  int i;
+  for (i = 0; i < fullPeriods; i++) {
+    // Calculate the interest for each full compound period
+    double periodInterestRate =
+        (interestRate / 100) * (compoundedPeriodInMonths / 12);
+    double interestForPeriod = currentPrincipal * periodInterestRate;
+    totalInterest += interestForPeriod;
+    currentPrincipal += interestForPeriod;
+
+    DateTime periodStartDate =
+        startDate.add(Duration(days: i * compoundedPeriodInMonths * 30));
+    DateTime periodEndDate =
+        startDate.add(Duration(days: (i + 1) * compoundedPeriodInMonths * 30));
+    final Map<String, dynamic> periodTimeDifference =
+        calculateDateDifference(periodStartDate, periodEndDate);
+    compoundedDetails.add({
+      'period': i + 1,
+      'interestAmount': interestForPeriod,
+      'principalAmount': currentPrincipal - interestForPeriod,
+      'totalAmount': currentPrincipal,
+      'startDate': periodStartDate,
+      'endDate': periodEndDate,
+      'totalTime': periodTimeDifference['totalTime'],
+    });
+  }
+
+  // Handle remaining days (even if less than a full month)
+  if (remainingDays > 0) {
+    double remainingPeriodRate =
+        (interestRate / 100) * (remainingDays / 365); // Adjust for partial year
+    double interestForRemainingDays = currentPrincipal * remainingPeriodRate;
+    totalInterest += interestForRemainingDays;
+    currentPrincipal += interestForRemainingDays;
+
+    DateTime remainingStartDate = startDate
+        .add(Duration(days: fullPeriods * compoundedPeriodInMonths * 30));
+    DateTime remainingEndDate = endDate;
+    final Map<String, dynamic> remainingTimeDifference =
+        calculateDateDifference(remainingStartDate, remainingEndDate);
+    compoundedDetails.add({
+      'period': i + 1,
+      'interestAmount': interestForRemainingDays,
+      'principalAmount': currentPrincipal - interestForRemainingDays,
+      'totalAmount': currentPrincipal,
+      'startDate': remainingStartDate,
+      'endDate': remainingEndDate,
+      'totalTime': remainingTimeDifference['totalTime'],
+    });
+  }
+
+  return {
+    'startDate': startDate,
+    'endDate': endDate,
+    'principalAmount': principalAmount,
+    'interestAmount': totalInterest,
+    'totalAmount': currentPrincipal,
+    'interestRate': interestRate,
+    'compoundedPeriodInMonths': compoundedPeriodInMonths,
+    'compoundedDetails': compoundedDetails,
+    'totalTime': timeDifference['totalTime'],
+  };
 }
 
 Map<String, dynamic> calculateSimpleInterest(
