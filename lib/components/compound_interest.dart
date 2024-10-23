@@ -230,12 +230,13 @@ Map<String, dynamic> calculateCompoundInterest(
   double totalInterest = 0;
   List<Map<String, dynamic>> compoundedDetails = [];
 
-  Duration totalDuration = endDate.difference(startDate);
-  int totalDays = totalDuration.inDays;
-  int fullPeriods = totalDays ~/
-      (compoundedPeriodInMonths * 30); // Calculate number of full periods
-  int remainingDays = totalDays %
-      (compoundedPeriodInMonths * 30); // Remaining days after full periods
+  DateTime currentStartDate = startDate;
+
+  // Calculate the number of periods based on the difference in months between startDate and endDate
+  int totalMonths = ((endDate.year - startDate.year) * 12) +
+      (endDate.month - startDate.month);
+  int fullPeriods = totalMonths ~/ compoundedPeriodInMonths;
+  int remainingMonths = totalMonths % compoundedPeriodInMonths;
 
   int i;
   for (i = 0; i < fullPeriods; i++) {
@@ -246,50 +247,49 @@ Map<String, dynamic> calculateCompoundInterest(
     totalInterest += interestForPeriod;
     currentPrincipal += interestForPeriod;
 
-    DateTime periodStartDate =
-        startDate.add(Duration(days: i * compoundedPeriodInMonths * 30));
-    DateTime periodEndDate =
-        startDate.add(Duration(days: (i + 1) * compoundedPeriodInMonths * 30));
+    DateTime periodEndDate = DateTime(
+        currentStartDate.year,
+        currentStartDate.month + compoundedPeriodInMonths,
+        currentStartDate.day);
+
     final Map<String, dynamic> periodTimeDifference =
-        calculateDateDifference(periodStartDate, periodEndDate);
+        calculateDateDifference(currentStartDate, periodEndDate);
+
     compoundedDetails.add({
       'period': i + 1,
       'interestAmount': interestForPeriod,
       'principalAmount': currentPrincipal - interestForPeriod,
       'totalAmount': currentPrincipal,
-      'startDate': periodStartDate,
+      'startDate': currentStartDate,
       'endDate': periodEndDate,
       'totalTime': periodTimeDifference['totalTime'],
     });
+
+    currentStartDate = periodEndDate;
   }
 
-  // Handle remaining days (even if less than a full month)
-  if (remainingDays > 0) {
-    double remainingPeriodRate =
-        (interestRate / 100) * (remainingDays / 365); // Adjust for partial year
+  // Handle remaining months if any
+  if (remainingMonths > 0 || currentStartDate.isBefore(endDate)) {
+    DateTime finalEndDate = endDate;
+    double remainingPeriodRate = (interestRate / 100) * (remainingMonths / 12);
     double interestForRemainingDays = currentPrincipal * remainingPeriodRate;
     totalInterest += interestForRemainingDays;
     currentPrincipal += interestForRemainingDays;
 
-    DateTime remainingStartDate = startDate
-        .add(Duration(days: fullPeriods * compoundedPeriodInMonths * 30));
-    DateTime remainingEndDate = endDate;
     final Map<String, dynamic> remainingTimeDifference =
-        calculateDateDifference(remainingStartDate, remainingEndDate);
+        calculateDateDifference(currentStartDate, finalEndDate);
     compoundedDetails.add({
       'period': i + 1,
       'interestAmount': interestForRemainingDays,
       'principalAmount': currentPrincipal - interestForRemainingDays,
       'totalAmount': currentPrincipal,
-      'startDate': remainingStartDate,
-      'endDate': remainingEndDate,
+      'startDate': currentStartDate,
+      'endDate': finalEndDate,
       'totalTime': remainingTimeDifference['totalTime'],
     });
   }
 
   return {
-    'startDate': startDate,
-    'endDate': endDate,
     'principalAmount': principalAmount,
     'interestAmount': totalInterest,
     'totalAmount': currentPrincipal,

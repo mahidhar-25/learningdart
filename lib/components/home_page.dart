@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:learningdart/components/compound_interest.dart';
+import 'package:learningdart/components/khatabook/khatabook_page.dart';
 import 'package:learningdart/components/simple_interest.dart';
 
 class HomePage extends StatefulWidget {
@@ -73,6 +74,21 @@ class _HomePageState extends State<HomePage> {
                   MaterialPageRoute(
                       builder: (context) =>
                           const CompoundInterestCalculatorPage()),
+                );
+              },
+            ),
+
+            // Compound Interest Calculator Box
+            _buildElevatedBox(
+              context,
+              'assets/khatabook_image.jpg', // Replace with a logo/icon for compound interest
+              'Khatabook',
+              () {
+                // Navigation to Compound Interest Calculator
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const KhatabookPage()),
                 );
               },
             ),
