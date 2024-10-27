@@ -97,6 +97,9 @@ class _CreatenewuserPageState extends State<CreatenewuserPage> {
                     const SnackBar(
                         content: Text('Created New User Successfull')),
                   );
+                  Future.delayed(const Duration(seconds: 1), () {
+                    Navigator.pop(context); // Go back to the previous screen
+                  });
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
