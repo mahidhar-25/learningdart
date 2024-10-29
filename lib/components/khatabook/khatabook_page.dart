@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:learningdart/components/khatabook/createnewuser_page.dart';
 import 'package:learningdart/components/khatabook/khatabook_usersview.dart';
+import 'package:learningdart/components/khatabook/showamount_givingpage.dart';
 
 class KhatabookPage extends StatefulWidget {
   const KhatabookPage({super.key});
@@ -109,7 +110,11 @@ class _KhatabookPageState extends State<KhatabookPage> {
                         right: 7.5), // Space between buttons
                     child: ElevatedButton(
                       onPressed: () {
-                        // Add your "Credit" button action here
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const AmountGivingPage()),
+                        );
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.green,

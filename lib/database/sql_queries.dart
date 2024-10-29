@@ -12,6 +12,96 @@ class SqlQueries {
 );
   ''';
 
+  static const String createKhatabookUsersTable = '''
+    CREATE TABLE khatabookUsers (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        village TEXT NOT NULL,
+        phone_number TEXT UNIQUE,
+        address TEXT,
+        CHECK (name IS NOT NULL AND village IS NOT NULL),
+        CONSTRAINT unique_name_village UNIQUE (name, village)
+    );
+''';
+
+  static const String createAccountsTable = '''
+  CREATE TABLE Accounts (
+    account_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER,
+    principal_amount REAL,
+    interest_rate REAL,
+    start_date DATE,
+    is_compounded BOOLEAN DEFAULT FALSE,
+    compounded_months INTEGER DEFAULT 0,
+    account_notes TEXT,
+    status TEXT DEFAULT 'active' CHECK(status IN ('active', 'completed')),
+    FOREIGN KEY (user_id) REFERENCES khatabookUsers(id) ON DELETE CASCADE
+);
+''';
+
+  static const String createTransactionTable = '''
+CREATE TABLE Transactions (
+    transaction_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    transaction_date DATE,
+    transaction_type TEXT CHECK(transaction_type IN ('credit', 'debit')),
+    transaction_notes TEXT,
+    user_id INTEGER,
+    transaction_amount REAL,
+    transaction_account INTEGER,
+    FOREIGN KEY (user_id) REFERENCES khatabookUsers(id) ON DELETE CASCADE,
+    FOREIGN KEY (transaction_account) REFERENCES Accounts(account_id) ON DELETE CASCADE
+);
+''';
+
+  static const String createRecievablesTable = '''
+CREATE TABLE Receivables (
+    receivable_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER,
+    account_id INTEGER,
+    amount_received REAL,
+    end_date DATE,
+    received_notes TEXT,
+    account_status BOOLEAN DEFAULT TRUE,
+    FOREIGN KEY (user_id) REFERENCES khatabookUsers(id) ON DELETE CASCADE,
+    FOREIGN KEY (account_id) REFERENCES Accounts(account_id) ON DELETE CASCADE
+);
+''';
+
+  static const String insertAccount = '''
+  INSERT INTO Accounts (user_id, principal_amount, interest_rate, start_date, is_compounded, account_notes , status)
+  VALUES (?, ?, ?, ?, ?, ? , ?);
+''';
+
+  static const String updateAccountByUserIdAndAccountId = '''
+UPDATE Accounts
+SET principal_amount = ?, interest_rate = ?, start_date = ?, is_compounded = ?, compounded_months = ?, account_notes = ?, status = ?
+WHERE user_id = ? AND account_id = ?;
+''';
+
+  static const String deleteAccountByUserIdAndAccountiD = '''
+DELETE FROM Accounts
+WHERE user_id = ? AND account_id = ?;
+''';
+
+  static const String getAllAccountByUserId = '''
+SELECT * FROM Accounts
+WHERE user_id = ?;
+''';
+
+  static const String getAllAccounts = '''
+SELECT * FROM Accounts;
+''';
+
+  static const String getKhatabookAccountByAccountId = '''
+SELECT * FROM Accounts
+WHERE  account_id = ?;
+''';
+
+  static const String getASpecificAccountByUserIdAndAccountId = '''
+SELECT * FROM Accounts
+WHERE user_id = ? AND account_id = ?;
+''';
+
   static const String insertUser = '''
     INSERT INTO users (username, password)
     VALUES (?, ?);
@@ -25,17 +115,6 @@ class SqlQueries {
     SELECT * FROM users WHERE username = ?
   ''';
   // Add more queries as needed
-  static const String createKhatabookUsersTable = '''
-    CREATE TABLE khatabookUsers (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL,
-        village TEXT NOT NULL,
-        phone_number TEXT UNIQUE,
-        address TEXT,
-        CHECK (name IS NOT NULL AND village IS NOT NULL),
-        CONSTRAINT unique_name_village UNIQUE (name, village)
-    );
-''';
 
   static const String insertKhatabookUser = '''
     INSERT INTO khatabookUsers (name, village, phone_number, address)

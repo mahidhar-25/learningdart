@@ -67,6 +67,9 @@ flutter:
     - assets/simpleInterest.jpeg
     - assets/compoundInterest.jpeg
     - assets/khatabook_image.jpg
+    - assets/emi.jpeg
+    - assets/sip.png
+    - assets/swp.png
 
   # To add assets to your application, add an assets section, like this:
   # assets:

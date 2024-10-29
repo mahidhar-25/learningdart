@@ -1,54 +1,18 @@
 import 'package:learningdart/components/model/khatabook_user.dart';
+import 'package:learningdart/database/db_manager.dart';
 import 'package:learningdart/database/sql_queries.dart';
-import 'package:sqflite/sqflite.dart';
 import 'package:logger/logger.dart';
-import 'package:path/path.dart'; // Required to define the path for the database
 
 class KhatabookUser {
   final logger = Logger();
-  static final KhatabookUser _singleton = KhatabookUser._internal();
-
-  factory KhatabookUser() {
-    return _singleton;
-  }
-
-  KhatabookUser._internal();
-
-  static Database? _database;
-
-  // Define database path and open connection
-  Future<Database> get database async {
-    if (_database != null) return _database!;
-
-    // Get the path to store the database
-    String dbPath = await getDatabasesPath();
-    String path = join(dbPath, "myflutter.db");
-
-    // Open and initialize the database
-    _database = await openDatabase(
-      path,
-      version: 1,
-      onCreate:
-          createKhatabookUsersTable, // Run onCreate callback to create table
-    );
-
-    logger.i('Database initialized');
-    return _database!;
-  }
-
-  // Create the user table
-  Future<void> createKhatabookUsersTable(Database db, int version) async {
-    await db.execute(SqlQueries.createKhatabookUsersTable);
-  }
-
   // Function to insert a new user
   Future<Map<String, dynamic>> insertNewKhatabookUser(
       KhatabookUserClass user) async {
     try {
-      final db = await database;
+      final db = DatabaseManager();
 
       // Query to check if the user already exists
-      final List<Map<String, dynamic>> existingUser = await db.rawQuery(
+      final List<Map<String, dynamic>> existingUser = await db.query(
           SqlQueries.checkKhatabookUserExists, [user.name, user.village]);
 
       if (existingUser.isNotEmpty) {
@@ -63,7 +27,7 @@ class KhatabookUser {
       }
 
       // Insert new user if not exists
-      final int newUserId = await db.rawInsert(SqlQueries.insertKhatabookUser,
+      final int newUserId = await db.insert(SqlQueries.insertKhatabookUser,
           [user.name, user.village, user.phone_number, user.address]);
       logger.i('User inserted successfully with ID: $newUserId');
 
@@ -93,8 +57,8 @@ class KhatabookUser {
   // Get all users
   Future<List<Map<String, dynamic>>> getAllUsers() async {
     try {
-      final db = await database;
-      return await db.rawQuery(SqlQueries.getAllKhatabookUsers);
+      final db = DatabaseManager();
+      return await db.query(SqlQueries.getAllKhatabookUsers);
     } catch (e) {
       logger.e('Error fetching users: $e');
       return [];
@@ -105,9 +69,9 @@ class KhatabookUser {
   Future<Map<String, dynamic>?> getUserByNameAndVillage(
       String name, String village) async {
     try {
-      final db = await database;
+      final db = DatabaseManager();
       final List<Map<String, dynamic>> result =
-          await db.rawQuery(SqlQueries.getKhatabookUser, [name, village]);
+          await db.query(SqlQueries.getKhatabookUser, [name, village]);
       if (result.isNotEmpty) {
         return result.first;
       } else {
@@ -122,9 +86,9 @@ class KhatabookUser {
   // Get user by ID
   Future<Map<String, dynamic>?> getUserById(int id) async {
     try {
-      final db = await database;
+      final db = DatabaseManager();
       final List<Map<String, dynamic>> result =
-          await db.rawQuery(SqlQueries.getKhatabookUserById, [id]);
+          await db.query(SqlQueries.getKhatabookUserById, [id]);
       if (result.isNotEmpty) {
         return result.first;
       } else {
@@ -139,8 +103,8 @@ class KhatabookUser {
   // Update user by ID
   Future<int> updateUserById(int id, KhatabookUserClass updatedUser) async {
     try {
-      final db = await database;
-      final int count = await db.rawUpdate(
+      final db = DatabaseManager();
+      final int count = await db.update(
         SqlQueries.updateKhatabookUserById,
         [
           updatedUser.name,
@@ -162,8 +126,8 @@ class KhatabookUser {
   Future<int> updateUserByNameAndVillage(
       KhatabookUserClass updatedUser, String oldName, String oldVillage) async {
     try {
-      final db = await database;
-      final int count = await db.rawUpdate(
+      final db = DatabaseManager();
+      final int count = await db.update(
         SqlQueries.updateKhatabookUser,
         [
           updatedUser.name,
@@ -185,9 +149,9 @@ class KhatabookUser {
   // Delete user by ID
   Future<int> deleteUserById(int id) async {
     try {
-      final db = await database;
+      final db = DatabaseManager();
       final int count =
-          await db.rawDelete(SqlQueries.deleteKhatabookUserById, [id]);
+          await db.delete(SqlQueries.deleteKhatabookUserById, [id]);
       logger.i('User deleted successfully, rows affected: $count');
       return count;
     } catch (e) {
@@ -199,9 +163,9 @@ class KhatabookUser {
   // Delete user by name and village
   Future<int> deleteUserByNameAndVillage(String name, String village) async {
     try {
-      final db = await database;
+      final db = DatabaseManager();
       final int count =
-          await db.rawDelete(SqlQueries.deleteKhatabookUser, [name, village]);
+          await db.delete(SqlQueries.deleteKhatabookUser, [name, village]);
       logger.i('User deleted successfully, rows affected: $count');
       return count;
     } catch (e) {
@@ -212,7 +176,7 @@ class KhatabookUser {
 
   // Close the database connection
   Future<void> dispose() async {
-    final db = await database;
+    final db = await DatabaseManager().database;
     await db.close();
   }
 }

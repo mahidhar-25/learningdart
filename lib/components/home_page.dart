@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:learningdart/components/compound_interest.dart';
+import 'package:learningdart/components/emi.dart';
 import 'package:learningdart/components/khatabook/khatabook_page.dart';
 import 'package:learningdart/components/simple_interest.dart';
 
@@ -83,6 +84,48 @@ class _HomePageState extends State<HomePage> {
               context,
               'assets/khatabook_image.jpg', // Replace with a logo/icon for compound interest
               'Khatabook',
+              () {
+                // Navigation to Compound Interest Calculator
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const KhatabookPage()),
+                );
+              },
+            ),
+
+            _buildElevatedBox(
+              context,
+              'assets/emi.jpeg', // Replace with a logo/icon for compound interest
+              'E.M.I',
+              () {
+                // Navigation to Compound Interest Calculator
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const EMICalculatorPage()),
+                );
+              },
+            ),
+
+            _buildElevatedBox(
+              context,
+              'assets/sip.png', // Replace with a logo/icon for compound interest
+              'S.I.P',
+              () {
+                // Navigation to Compound Interest Calculator
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const KhatabookPage()),
+                );
+              },
+            ),
+
+            _buildElevatedBox(
+              context,
+              'assets/swp.png', // Replace with a logo/icon for compound interest
+              'S.W.P',
               () {
                 // Navigation to Compound Interest Calculator
                 Navigator.push(
