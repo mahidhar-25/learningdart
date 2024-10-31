@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:learningdart/components/khatabook/userdetail_view.dart';
 import 'package:learningdart/components/khatabook/users_db.dart';
 
 class KhatabookUsersView extends StatefulWidget {
@@ -133,7 +134,7 @@ class _KhatabookUsersViewState extends State<KhatabookUsersView> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => UserDetailsPage(user: user),
+        builder: (context) => UserDetailViewPage(user: user),
       ),
     );
   }

@@ -312,9 +312,9 @@ keyboardType: TextInputType.multiline,
                                 await KhatabookAccount()
                                     .insertNewKhatabookAccount(account);
 
-                            if (response['success']) {
+                            if (response['success'] == 1) {
                               logger.i(
-                                  'Created New Account Successfull with ID: ${response['account']['id']}');
+                                  'Created New Account Successfull with ID: $response');
 
                               const SnackBar(
                                   content:
