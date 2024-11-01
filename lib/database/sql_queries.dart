@@ -23,6 +23,11 @@ class SqlQueries {
         CONSTRAINT unique_name_village UNIQUE (name, village)
     );
 ''';
+  static const String getAllTransactionsWithUserInfo = '''
+SELECT Transactions.*, khatabookUsers.name, khatabookUsers.village
+FROM Transactions
+JOIN khatabookUsers ON Transactions.user_id = khatabookUsers.id;
+''';
 
   static const String createAccountsTable = '''
   CREATE TABLE Accounts (
@@ -39,6 +44,14 @@ class SqlQueries {
 );
 ''';
 
+  static const AlterAccountsTable = '''
+ALTER TABLE Accounts ADD COLUMN interest_amount REAL;
+
+ALTER TABLE Accounts ADD COLUMN end_date DATE;
+
+ALTER TABLE Accounts ADD COLUMN closed_notes TEXT;
+''';
+
   static const String createTransactionTable = '''
 CREATE TABLE Transactions (
     transaction_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -51,6 +64,20 @@ CREATE TABLE Transactions (
     FOREIGN KEY (user_id) REFERENCES khatabookUsers(id) ON DELETE CASCADE,
     FOREIGN KEY (transaction_account) REFERENCES Accounts(account_id) ON DELETE CASCADE
 );
+''';
+
+  static const String insertTransaction = '''
+INSERT INTO Transactions (transaction_date, transaction_type, transaction_notes, user_id, transaction_amount, transaction_account)
+VALUES (?, ?, ?, ?, ?, ?);
+''';
+
+  static const String getAllTransactionsByUserId = '''
+SELECT * FROM Transactions
+WHERE user_id = ?;
+''';
+
+  static const String getAllTransactions = '''
+SELECT * FROM Transactions;
 ''';
 
   static const String createRecievablesTable = '''

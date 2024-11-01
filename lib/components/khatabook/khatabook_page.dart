@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:learningdart/components/khatabook/createnewuser_page.dart';
 import 'package:learningdart/components/khatabook/khatabook_usersview.dart';
 import 'package:learningdart/components/khatabook/showamount_givingpage.dart';
+import 'package:learningdart/components/khatabook/transaction_detailview.dart';
 
 class KhatabookPage extends StatefulWidget {
   const KhatabookPage({super.key});
@@ -69,7 +70,7 @@ class _KhatabookPageState extends State<KhatabookPage> {
       CardItem(
         icon: Icons.book,
         title: 'View Transactions',
-        destination: const NewPage(title: 'View Transactions'),
+        destination: const TransactionDetailViewPage(),
       ),
       CardItem(
         icon: Icons.analytics,

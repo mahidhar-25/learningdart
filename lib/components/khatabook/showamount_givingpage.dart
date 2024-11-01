@@ -312,7 +312,7 @@ keyboardType: TextInputType.multiline,
                                 await KhatabookAccount()
                                     .insertNewKhatabookAccount(account);
 
-                            if (response['success'] == 1) {
+                            if (response['success']) {
                               logger.i(
                                   'Created New Account Successfull with ID: $response');
 
