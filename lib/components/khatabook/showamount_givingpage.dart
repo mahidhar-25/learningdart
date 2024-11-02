@@ -307,7 +307,7 @@ keyboardType: TextInputType.multiline,
                               accountNotes: _creationNotes.text,
                               status: 'active',
                             );
-
+                            logger.i(account.toString());
                             Map<String, dynamic> response =
                                 await KhatabookAccount()
                                     .insertNewKhatabookAccount(account);

@@ -17,6 +17,7 @@ class KhatabookAccount {
         account.interestRate,
         DateFormat('yyyy-MM-dd').format(account.startDate),
         account.isCompounded,
+        account.compoundedMonths,
         account.accountNotes,
         account.status
       ]);

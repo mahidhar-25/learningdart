@@ -39,6 +39,12 @@ class DatabaseManager {
         }
 
         try {
+          await db.execute(SqlQueries.AlterAccountsTable);
+        } catch (e) {
+          logger.e("Error alter KhatabookUsers table: $e");
+        }
+
+        try {
           await db.execute(SqlQueries.createRecievablesTable);
         } catch (e) {
           logger.e("Error creating Receivables table: $e");

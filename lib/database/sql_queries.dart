@@ -95,8 +95,8 @@ CREATE TABLE Receivables (
 ''';
 
   static const String insertAccount = '''
-  INSERT INTO Accounts (user_id, principal_amount, interest_rate, start_date, is_compounded, account_notes , status)
-  VALUES (?, ?, ?, ?, ?, ? , ?);
+  INSERT INTO Accounts (user_id, principal_amount, interest_rate, start_date, is_compounded, compounded_months, account_notes , status)
+  VALUES (?, ?, ?, ?, ?, ? , ? , ?);
 ''';
 
   static const String updateAccountByUserIdAndAccountId = '''

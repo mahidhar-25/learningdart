@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:learningdart/components/compound_interest.dart';
 import 'package:learningdart/components/khatabook/accounts_db.dart';
 import 'package:learningdart/components/logger_component.dart';
 
@@ -51,11 +52,56 @@ class _UserDetailViewPageState extends State<UserDetailViewPage>
   Future<void> _fetchUserInfo() async {
     final List<Map<String, dynamic>> userInfoFromDb =
         await KhatabookAccount().getAllaccountsofUser(widget.user['id']);
+
+    // Create a mutable list to hold copies of the accounts
+    final List<Map<String, dynamic>> mutableUserInfo =
+        userInfoFromDb.map((account) {
+      return Map<String, dynamic>.from(
+          account); // Create a mutable copy of each account
+    }).toList();
+
+    for (var account in mutableUserInfo) {
+      DateTime startDate = DateTime.parse(account['start_date']);
+      DateTime endDate = account['end_date'] != null
+          ? DateTime.parse(account['end_date'])
+          : DateTime.now();
+
+      // Check if 'principal_amount' and 'interest_rate' are already double
+      double principalAmount = account['principal_amount'] is String
+          ? double.parse(account['principal_amount'])
+          : account['principal_amount'];
+
+      double interestRate = account['interest_rate'] is String
+          ? double.parse(account['interest_rate'])
+          : account['interest_rate'];
+
+      Map<String, dynamic> result;
+      if (account['is_compounded'] == 1) {
+        int compoundedMonths = account['compounded_months'] is String
+            ? int.parse(account['compounded_months'])
+            : account['compounded_months'];
+        result = calculateCompoundInterest(principalAmount, interestRate,
+            compoundedMonths, startDate, endDate);
+        account['compounding_details'] = result['compoundingDetails'];
+        account['total_time'] = result['totalTime'];
+      } else {
+        result = calculateSimpleInterest(
+            principalAmount, interestRate, startDate, endDate);
+        account['total_time'] = result['timeDifference']['totalTime'];
+      }
+
+      account['interest_amount'] = result['interestAmount'];
+
+      account['total_amount'] = result['totalAmount'];
+    }
+
     setState(() {
-      userInfo = userInfoFromDb;
+      userInfo = mutableUserInfo;
       filteredAccounts = _filterAndSortAccounts(); // Initial filter and sort
       isLoading = false;
     });
+
+    logger.i(userInfo);
   }
 
   List<Map<String, dynamic>> _filterAndSortAccounts() {
@@ -266,55 +312,169 @@ class _UserDetailViewPageState extends State<UserDetailViewPage>
                     itemCount: filteredAccounts.length,
                     itemBuilder: (context, index) {
                       final account = filteredAccounts[index];
+                      bool isActive = account['status'] == 'active';
+
                       return Padding(
                         padding: const EdgeInsets.symmetric(
                             vertical: 8.0, horizontal: 16.0),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: Colors.grey[200],
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.grey[400]!),
-                          ),
-                          padding: const EdgeInsets.all(16),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // Account Information
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    "Start Date: ${account['start_date']}",
-                                    style: const TextStyle(
-                                        fontWeight: FontWeight.bold),
-                                  ),
-                                  Text(
-                                    "Status: ${account['status']}",
-                                    style: TextStyle(
-                                      color: account['status'] == 'active'
-                                          ? Colors.green
-                                          : Colors.red,
+                        child: GestureDetector(
+                          onTap: () {
+                            // Handle onPressed if needed, like showing details in a new screen
+                          },
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.grey[50],
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: Colors.grey.shade200),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey.withOpacity(0.15),
+                                  spreadRadius: 1,
+                                  blurRadius: 4,
+                                  offset: const Offset(0, 3),
+                                ),
+                              ],
+                            ),
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Header Row: Start Date and Status
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      "Start Date: ${account['start_date']}",
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 16,
+                                        color: Colors.black87,
+                                      ),
                                     ),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 4.0, horizontal: 8.0),
+                                      decoration: BoxDecoration(
+                                        color: isActive
+                                            ? Colors.green.shade100
+                                            : Colors.red.shade100,
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Text(
+                                        "Status: ${account['status']}",
+                                        style: TextStyle(
+                                          color: isActive
+                                              ? Colors.green.shade700
+                                              : Colors.red.shade700,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 8),
+                                const Divider(
+                                    color: Colors.grey, thickness: 0.5),
+                                const SizedBox(height: 8),
+
+                                // Main Info Section with Icons for clarity
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    InfoColumn(
+                                      label: "Principal Amount",
+                                      value: "₹${account['principal_amount']}",
+                                      icon: Icons.attach_money,
+                                    ),
+                                    InfoColumn(
+                                      label: "Interest Rate",
+                                      value: "${account['interest_rate']}%",
+                                      icon: Icons.percent,
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 8),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    InfoColumn(
+                                      label: "Interest Amount",
+                                      value: "₹${account['interest_amount']}",
+                                      icon: Icons.monetization_on,
+                                    ),
+                                    InfoColumn(
+                                      label: "Total Time",
+                                      value: "${account['total_time']}",
+                                      icon: Icons.schedule,
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 12),
+
+                                // Compounding Information
+                                Text(
+                                  "Is Compounded: ${account['is_compounded'] == 1 ? 'Yes' : 'No'}",
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w500,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                                if (account['is_compounded'] == 1) ...[
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    "Compounded Months: ${account['compounded_months']}",
+                                    style: TextStyle(
+                                        color: Colors.blueGrey.shade600),
                                   ),
                                 ],
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                  "Principal Amount: ₹${account['principal_amount']}"),
-                              const SizedBox(height: 4),
-                              Text(
-                                  "Interest Rate: ${account['interest_rate']}%"),
-                              const SizedBox(height: 4),
-                              Text(
-                                  "Compounded: ${account['is_compounded'] == 1 ? 'Yes' : 'No'}"),
-                              if (account['is_compounded'] == 1)
+
+                                // Notes Section
+                                const SizedBox(height: 12),
+                                const Text(
+                                  "Notes:",
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.black87),
+                                ),
                                 Text(
-                                    "Compounded Months: ${account['compounded_months']}"),
-                              const SizedBox(height: 4),
-                              Text(
-                                  "Notes: ${account['account_notes'] ?? 'N/A'}"),
-                            ],
+                                  account['account_notes'] ?? 'N/A',
+                                  style: TextStyle(color: Colors.grey.shade700),
+                                ),
+                                const SizedBox(height: 12),
+
+                                // Date Section with Action Button
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      isActive
+                                          ? "Till Date: ${DateTime.now().toString().split(' ')[0]}"
+                                          : "End Date: ${account['end_date'] ?? 'N/A'}",
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.blueAccent,
+                                      ),
+                                    ),
+                                    ElevatedButton(
+                                      onPressed: () {
+                                        // Define an onPressed action for the button
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.blue.shade50,
+                                        foregroundColor: Colors.blueAccent,
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 16, vertical: 8),
+                                      ),
+                                      child: const Text("More Details"),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       );
@@ -323,6 +483,49 @@ class _UserDetailViewPageState extends State<UserDetailViewPage>
                 ),
               ],
             ),
+    );
+  }
+}
+
+class InfoColumn extends StatelessWidget {
+  final String label;
+  final String value;
+  final IconData icon;
+
+  const InfoColumn({
+    super.key,
+    required this.label,
+    required this.value,
+    required this.icon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(icon, size: 16, color: Colors.blueAccent),
+            const SizedBox(width: 4),
+            Text(
+              label,
+              style: const TextStyle(
+                fontWeight: FontWeight.w600,
+                color: Colors.black87,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: const TextStyle(
+            fontSize: 14,
+            color: Colors.black54,
+          ),
+        ),
+      ],
     );
   }
 }
