@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:learningdart/components/khatabook/createnewuser_page.dart';
 import 'package:learningdart/components/khatabook/khatabook_usersview.dart';
 import 'package:learningdart/components/khatabook/showamount_givingpage.dart';
+import 'package:learningdart/components/khatabook/showamount_recievepage.dart';
 import 'package:learningdart/components/khatabook/transaction_detailview.dart';
 
 class KhatabookPage extends StatefulWidget {
@@ -139,6 +140,12 @@ class _KhatabookPageState extends State<KhatabookPage> {
                         left: 7.5), // Space between buttons
                     child: ElevatedButton(
                       onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) =>
+                                  const AmountRecievingPage()),
+                        );
                         // Add your "Debit" button action here
                       },
                       style: ElevatedButton.styleFrom(

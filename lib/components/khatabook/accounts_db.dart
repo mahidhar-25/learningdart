@@ -1,5 +1,6 @@
 import 'package:intl/intl.dart';
 import 'package:learningdart/components/model/khatabook_account.dart';
+import 'package:learningdart/components/model/khatabook_receivables.dart';
 import 'package:learningdart/database/db_manager.dart';
 import 'package:learningdart/database/sql_queries.dart';
 import 'package:logger/logger.dart';
@@ -68,6 +69,17 @@ class KhatabookAccount {
     }
   }
 
+  Future<List<Map<String, dynamic>>> getAllActiveaccountsofUser(
+      int userId) async {
+    try {
+      final db = DatabaseManager();
+      return await db.query(SqlQueries.getAllActiveAccountByUserId, [userId]);
+    } catch (e) {
+      logger.e('Error fetching accounts: $e');
+      return [];
+    }
+  }
+
   // Get account by name and village
   Future<List<Map<String, dynamic>>?> getAllAccounts(
       String name, String village) async {
@@ -103,20 +115,20 @@ class KhatabookAccount {
     }
   }
 
-/*
   // Update account by ID
-  Future<int> updateaccountById(
-      int id, KhatabookaccountClass updatedaccount) async {
+  Future<int> insertAccountIntoRecievables1(
+      int id, KhatabookReceivablesClass updatedaccount) async {
     try {
       final db = DatabaseManager();
       final int count = await db.update(
-        SqlQueries.updateKhatabookaccountById,
+        SqlQueries.insertIntoRecievables,
         [
-          updatedaccount.name,
-          updatedaccount.village,
-          updatedaccount.phone_number,
-          updatedaccount.address,
-          id
+          updatedaccount.userId, //user id
+          updatedaccount.accountId, //account id
+          updatedaccount.amountReceived, //amount recieved
+          updatedaccount.endDate, //end date
+          updatedaccount.receivedNotes, //recieved notes
+          updatedaccount.status //status
         ],
       );
       logger.i('account updated successfully, rows affected: $count');
@@ -127,6 +139,86 @@ class KhatabookAccount {
     }
   }
 
+  Future<Map<String, dynamic>> insertAccountIntoRecievables(
+      KhatabookReceivablesClass account) async {
+    try {
+      final db = DatabaseManager();
+      final int newaccountId =
+          await db.insert(SqlQueries.insertIntoRecievables, [
+        account.userId, //user id
+        account.accountId, //account id
+        account.amountReceived, //amount recieved
+        DateFormat('yyyy-MM-dd').format(account.endDate),
+        account.receivedNotes, //recieved notes
+        account.status //status
+      ]);
+      logger.i('account inserted successfully with ID: $newaccountId');
+
+      const String credit = 'debit';
+      final int result = await db.insert(SqlQueries.insertTransaction, [
+        DateFormat('yyyy-MM-dd').format(account.endDate),
+        credit,
+        account.receivedNotes,
+        account.userId,
+        account.amountReceived,
+        account.accountId
+      ]);
+
+      logger.i('credit transaction inserted successfully with ID: $result');
+      // Return success response with the new account's details
+      return {
+        'success': true,
+        'message': 'account inserted successfully',
+        'account': {
+          'id': newaccountId,
+          'account': account,
+        }
+      };
+    } catch (e) {
+      // Handle any errors
+      logger.e('Error inserting account: $e');
+      return {
+        'success': false,
+        'message': 'Error inserting account',
+        'error': e.toString(),
+      };
+    }
+  }
+
+  Future<int> updateStatusByIdInKhatabookAccount(
+      KhatabookReceivablesClass account) async {
+    try {
+      final db = DatabaseManager();
+      final int count = await db.update(
+        SqlQueries.updateAccountsTableForRecieving,
+        [
+          account.status,
+          account.amountReceived,
+          DateFormat('yyyy-MM-dd').format(account.endDate),
+          account.receivedNotes,
+          account.accountId
+        ],
+      );
+      logger.i('account updated successfully, rows affected: $count');
+      const String credit = 'debit';
+      final int result = await db.insert(SqlQueries.insertTransaction, [
+        DateFormat('yyyy-MM-dd').format(account.endDate),
+        credit,
+        account.receivedNotes,
+        account.userId,
+        account.amountReceived,
+        account.accountId
+      ]);
+
+      logger.i('credit transaction inserted successfully with ID: $result');
+      return count;
+    } catch (e) {
+      logger.e('Error updating account: $e');
+      return 0;
+    }
+  }
+
+/*
   // Update account by name and village
   Future<int> updateaccountByNameAndVillage(
       KhatabookaccountClass updatedaccount,

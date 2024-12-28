@@ -385,7 +385,8 @@ class _UserDetailViewPageState extends State<UserDetailViewPage>
                                   children: [
                                     InfoColumn(
                                       label: "Principal Amount",
-                                      value: "₹${account['principal_amount']}",
+                                      value:
+                                          "₹${account['principal_amount'].toStringAsFixed(3)}",
                                       icon: Icons.attach_money,
                                     ),
                                     InfoColumn(
@@ -402,7 +403,8 @@ class _UserDetailViewPageState extends State<UserDetailViewPage>
                                   children: [
                                     InfoColumn(
                                       label: "Interest Amount",
-                                      value: "₹${account['interest_amount']}",
+                                      value:
+                                          "₹${account['interest_amount'].toStringAsFixed(3)}",
                                       icon: Icons.monetization_on,
                                     ),
                                     InfoColumn(
@@ -434,7 +436,7 @@ class _UserDetailViewPageState extends State<UserDetailViewPage>
                                 // Notes Section
                                 const SizedBox(height: 12),
                                 const Text(
-                                  "Notes:",
+                                  "Opening Notes:",
                                   style: TextStyle(
                                       fontWeight: FontWeight.w600,
                                       color: Colors.black87),
@@ -443,6 +445,28 @@ class _UserDetailViewPageState extends State<UserDetailViewPage>
                                   account['account_notes'] ?? 'N/A',
                                   style: TextStyle(color: Colors.grey.shade700),
                                 ),
+
+                                if (account['status'] != "active")
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const SizedBox(height: 12),
+                                      const Text(
+                                        "Closing Notes:",
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.black87,
+                                        ),
+                                      ),
+                                      Text(
+                                        account['closed_notes'] ?? 'N/A',
+                                        style: TextStyle(
+                                            color: Colors.grey.shade700),
+                                      ),
+                                    ],
+                                  ),
+
                                 const SizedBox(height: 12),
 
                                 // Date Section with Action Button

@@ -7,6 +7,7 @@ import 'package:learningdart/components/khatabook/accounts_db.dart';
 import 'package:learningdart/components/khatabook/users_db.dart';
 import 'package:learningdart/components/logger_component.dart';
 import 'package:learningdart/components/model/khatabook_account.dart';
+import 'package:learningdart/components/resizable_textarea.dart';
 
 class AmountGivingPage extends StatefulWidget {
   const AmountGivingPage({super.key});
@@ -186,16 +187,6 @@ class _AmountGivingPageState extends State<AmountGivingPage> {
                         .toList(),
                   ),
                 ),
-/*
-
-keyboardType: TextInputType.multiline,
-          maxLines: null, // Allows the TextField to be multiline
-          minLines: 5, // Sets a minimum height for the TextField
-          decoration: InputDecoration(
-            hintText: 'Enter your text here...',
-            border: OutlineInputBorder(),
-          ),
- */
               const SizedBox(height: 5),
               _selectedUser != null
                   ? Column(children: [
@@ -232,29 +223,12 @@ keyboardType: TextInputType.multiline,
                           ),
                         ),
                       ),
-                      GestureDetector(
-                        onTap: () => _selectDate(context, isStartDate: false),
-                        child: AbsorbPointer(
-                          child: CustomTextField(
-                            enabled: false,
-                            labelText: 'End Date',
-                            controller: TextEditingController(
-                                text: _endDate == null
-                                    ? ''
-                                    : DateFormat('yyyy-MM-dd')
-                                        .format(_endDate!)),
-                            keyboardType: TextInputType.none,
-                          ),
-                        ),
-                      ),
-                      CustomTextField(
-                        labelText: 'Account Creation Notes',
+                      ResizableTextField(
                         controller: _creationNotes,
-                        keyboardType: TextInputType.multiline,
-                        focusNode: _creationNotesFocus,
-                        maxLines: null,
-                        minLines: 5,
                         hintText: 'Enter your text here...',
+                        focusNode: _creationNotesFocus,
+                        labelText:
+                            'Account Creation Notes', // Custom label text
                       ),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 20),

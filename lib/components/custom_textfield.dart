@@ -2,21 +2,23 @@ import 'package:flutter/material.dart';
 
 class CustomTextField extends StatelessWidget {
   // Constructor to accept parameters
-  const CustomTextField(
-      {super.key,
-      required this.labelText,
-      required this.controller,
-      this.obscureText = false,
-      this.hintText,
-      this.enableSuggestions = true,
-      this.autocorrect = true,
-      this.keyboardType = TextInputType.text,
-      this.focusNode,
-      this.width,
-      this.enabled = true,
-      this.decoration,
-      this.minLines,
-      this.maxLines});
+  const CustomTextField({
+    super.key,
+    required this.labelText,
+    required this.controller,
+    this.obscureText = false,
+    this.hintText,
+    this.enableSuggestions = true,
+    this.autocorrect = true,
+    this.keyboardType = TextInputType.text,
+    this.focusNode,
+    this.width,
+    this.enabled = true,
+    this.minLines = 1,
+    this.maxLines,
+    this.prefixIcon,
+    this.suffixIcon,
+  });
 
   // Parameters to make the widget reusable
   final String labelText;
@@ -31,35 +33,68 @@ class CustomTextField extends StatelessWidget {
   final bool? enabled;
   final int? minLines;
   final int? maxLines;
-  final InputDecoration? decoration;
+  final Widget? prefixIcon;
+  final Widget? suffixIcon;
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-        height: 70,
-        width: width ??
-            MediaQuery.of(context).size.width * 0.95, // 80% of screen width
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 20, // equal margins on both sides
-            vertical: 10, // small margin on top and bottom
-          ), // You can modify width as needed or pass as argument
-          child: TextField(
-            minLines: minLines,
-            maxLines: maxLines == null ? maxLines : 1,
-            enabled: enabled,
-            focusNode: focusNode,
-            keyboardType: keyboardType,
-            enableSuggestions: enableSuggestions!, // Enable auto-suggestions
-            autocorrect: autocorrect!, // Enable auto-correct
-            controller: controller,
-            obscureText: obscureText, // Useful for password fields
-            decoration: InputDecoration(
-              border: const OutlineInputBorder(),
-              labelText: labelText, // Label for the TextField
-              hintText: hintText, // Optional hint text
-            ),
+    return Container(
+      width: width ?? MediaQuery.of(context).size.width * 0.9,
+      margin: const EdgeInsets.symmetric(vertical: 10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.2),
+            spreadRadius: 2,
+            blurRadius: 5,
+            offset: const Offset(0, 3), // changes position of shadow
           ),
-        ));
+        ],
+      ),
+      child: TextField(
+        controller: controller,
+        obscureText: obscureText,
+        keyboardType: keyboardType,
+        minLines: minLines,
+        maxLines: maxLines,
+        enabled: enabled,
+        focusNode: focusNode,
+        enableSuggestions: enableSuggestions!,
+        autocorrect: autocorrect!,
+        style: const TextStyle(fontSize: 16, color: Colors.black87),
+        decoration: InputDecoration(
+          prefixIcon: prefixIcon,
+          suffixIcon: suffixIcon,
+          labelText: labelText,
+          hintText: hintText,
+          filled: true,
+          fillColor: Colors.white,
+          contentPadding:
+              const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: Colors.grey),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: Colors.grey),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: Colors.deepPurple, width: 2),
+          ),
+          errorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: Colors.red, width: 2),
+          ),
+          disabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: Colors.grey, width: 1),
+          ),
+        ),
+      ),
+    );
   }
 }

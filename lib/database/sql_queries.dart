@@ -40,16 +40,21 @@ JOIN khatabookUsers ON Transactions.user_id = khatabookUsers.id;
     compounded_months INTEGER DEFAULT 0,
     account_notes TEXT,
     status TEXT DEFAULT 'active' CHECK(status IN ('active', 'completed')),
+    amount_received REAL,
+    end_date DATE,
+    closed_notes TEXT,
     FOREIGN KEY (user_id) REFERENCES khatabookUsers(id) ON DELETE CASCADE
 );
 ''';
 
-  static const AlterAccountsTable = '''
-ALTER TABLE Accounts ADD COLUMN interest_amount REAL;
-
-ALTER TABLE Accounts ADD COLUMN end_date DATE;
-
-ALTER TABLE Accounts ADD COLUMN closed_notes TEXT;
+  static const String updateAccountsTableForRecieving = '''
+UPDATE Accounts
+SET 
+  status = ?, 
+  amount_received = ?, 
+  end_date = ?, 
+  closed_notes = ?
+WHERE account_id = ?;
 ''';
 
   static const String createTransactionTable = '''
@@ -80,18 +85,48 @@ WHERE user_id = ?;
 SELECT * FROM Transactions;
 ''';
 
-  static const String createRecievablesTable = '''
-CREATE TABLE Receivables (
-    receivable_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id INTEGER,
-    account_id INTEGER,
-    amount_received REAL,
-    end_date DATE,
-    received_notes TEXT,
-    account_status BOOLEAN DEFAULT TRUE,
-    FOREIGN KEY (user_id) REFERENCES khatabookUsers(id) ON DELETE CASCADE,
-    FOREIGN KEY (account_id) REFERENCES Accounts(account_id) ON DELETE CASCADE
-);
+//   static const String createRecievablesTable = '''
+// CREATE TABLE Receivables (
+//     receivable_id INTEGER PRIMARY KEY AUTOINCREMENT,
+//     user_id INTEGER,
+//     account_id INTEGER,
+//     amount_received REAL,
+//     end_date DATE,
+//     received_notes TEXT,
+//     status TEXT DEFAULT 'active' CHECK(status IN ('active', 'completed')),
+//     FOREIGN KEY (user_id) REFERENCES khatabookUsers(id) ON DELETE CASCADE,
+//     FOREIGN KEY (account_id) REFERENCES Accounts(account_id) ON DELETE CASCADE
+// );
+// ''';
+
+  static const String insertIntoRecievables = '''
+INSERT INTO Receivables (user_id, account_id, amount_received, end_date, received_notes, status) 
+VALUES (?, ?, ?, ?, ?, ?);
+''';
+
+  static const String getAllRecievables = '''
+SELECT * FROM Receivables;
+''';
+
+  static const String getAllRecievablesByUserId = '''
+SELECT * FROM Receivables
+WHERE user_id = ?;
+''';
+
+  static const String getRecievablesByReceivableId = '''
+SELECT * FROM Receivables
+WHERE receivable_id = ?;
+''';
+
+  static const String updateRecievablesByReceivableId = '''
+UPDATE Receivables
+SET user_id = ?, account_id = ?, amount_received = ?, end_date = ?, received_notes = ?, status = ?
+WHERE receivable_id = ?;
+''';
+
+  static const String deleteRecievablesByReceivableId = '''
+DELETE FROM Receivables
+WHERE receivable_id = ?;
 ''';
 
   static const String insertAccount = '''
@@ -113,6 +148,11 @@ WHERE user_id = ? AND account_id = ?;
   static const String getAllAccountByUserId = '''
 SELECT * FROM Accounts
 WHERE user_id = ?;
+''';
+
+  static const String getAllActiveAccountByUserId = '''
+SELECT * FROM Accounts
+WHERE user_id = ? AND status = 'active';
 ''';
 
   static const String getAllAccounts = '''

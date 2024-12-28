@@ -112,8 +112,8 @@ Map<String, dynamic> calculateDateDifference(
   // Calculate total difference in days
   final totalDays = endDate.difference(startDate).inDays;
   // Total time in years (including fractional months)
-  final totalYears = double.parse((totalDays / 365).toStringAsFixed(3));
-  final totalMonths = double.parse((totalDays / 30).toStringAsFixed(3));
+  final totalYears = double.parse((totalDays / 365).toString());
+  final totalMonths = double.parse((totalDays / 30).toString());
 
   // Calculate the year difference
   int years = endDate.year - startDate.year;

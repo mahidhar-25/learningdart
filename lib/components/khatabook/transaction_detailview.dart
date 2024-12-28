@@ -282,7 +282,7 @@ class _TransactionDetailViewPageState extends State<TransactionDetailViewPage>
                                     ),
                                   ),
                                   Text(
-                                    "₹${account['transaction_amount']}",
+                                    "₹${account['transaction_amount'].toStringAsFixed(3)}",
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,
                                       fontSize: 16,
@@ -326,7 +326,7 @@ class _TransactionDetailViewPageState extends State<TransactionDetailViewPage>
 
                               // Transaction Notes
                               Text(
-                                "Notes: ${account['transaction_notes'] ?? 'N/A'}",
+                                "Notes: ${account['transaction_notes'].length > 30 ? account['transaction_notes'].substring(0, 30) + '...' : account['transaction_notes'] ?? 'N/A'}",
                                 style: TextStyle(
                                   fontSize: 14,
                                   color: Colors.grey[700],
