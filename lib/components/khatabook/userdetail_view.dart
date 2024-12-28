@@ -415,26 +415,40 @@ class _UserDetailViewPageState extends State<UserDetailViewPage>
                                   ],
                                 ),
                                 const SizedBox(height: 12),
-
-                                // Compounding Information
-                                Text(
-                                  "Is Compounded: ${account['is_compounded'] == 1 ? 'Yes' : 'No'}",
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w500,
-                                    color: Colors.black87,
-                                  ),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    // Compounding Information
+                                    Text(
+                                      "Is Compounded: ${account['is_compounded'] == 1 ? 'Yes' : 'No'}",
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w500,
+                                        color: Colors.black87,
+                                      ),
+                                    ),
+                                    if (account['is_compounded'] == 1) ...[
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        "Compounded Months: ${account['compounded_months']}",
+                                        style: TextStyle(
+                                            color: Colors.blueGrey.shade600),
+                                      ),
+                                    ],
+                                  ],
                                 ),
-                                if (account['is_compounded'] == 1) ...[
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    "Compounded Months: ${account['compounded_months']}",
-                                    style: TextStyle(
-                                        color: Colors.blueGrey.shade600),
-                                  ),
-                                ],
 
                                 // Notes Section
                                 const SizedBox(height: 12),
+                                if (account['status'] != "active") ...{
+                                  InfoColumn(
+                                    label: "Amount Paid",
+                                    value:
+                                        "${account['amount_received'].toStringAsFixed(3)}",
+                                    icon: Icons.attach_money,
+                                  ),
+                                  const SizedBox(height: 12),
+                                },
                                 const Text(
                                   "Opening Notes:",
                                   style: TextStyle(

@@ -217,3 +217,34 @@ Map<String, dynamic> calculateEMI({
   logger.i(emiSchedule);
   return emiSchedule;
 }
+
+class SipCalculator {
+  static Map<String, double> calculateSip({
+    required double monthlyInvestment,
+    required double annualInterestRate,
+    required int timePeriodInYears,
+  }) {
+    // Convert annual interest rate to monthly interest rate
+    double monthlyRate = annualInterestRate / 12 / 100;
+
+    // Total number of months
+    int totalMonths = timePeriodInYears * 12;
+
+    // Total investment (principal)
+    double totalInvestment = monthlyInvestment * totalMonths;
+
+    // Future value formula for SIP
+    double estimatedReturns = monthlyInvestment *
+        ((pow(1 + monthlyRate, totalMonths) - 1) / monthlyRate) *
+        (1 + monthlyRate);
+
+    // Total amount (investment + returns)
+    double totalAmount = estimatedReturns;
+
+    return {
+      'totalInvestment': totalInvestment,
+      'estimatedReturns': totalAmount - totalInvestment,
+      'totalAmount': totalAmount,
+    };
+  }
+}

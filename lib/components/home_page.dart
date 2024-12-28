@@ -3,6 +3,7 @@ import 'package:learningdart/components/compound_interest.dart';
 import 'package:learningdart/components/emi.dart';
 import 'package:learningdart/components/khatabook/khatabook_page.dart';
 import 'package:learningdart/components/simple_interest.dart';
+import 'package:learningdart/components/sip_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -117,7 +118,7 @@ class _HomePageState extends State<HomePage> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) => const KhatabookPage()),
+                      builder: (context) => const SIPCalculatorPage()),
                 );
               },
             ),
