@@ -248,3 +248,51 @@ class SipCalculator {
     };
   }
 }
+
+class SwpCalculator {
+  static Map<String, double> calculateSWP({
+    required double totalInvestment,
+    required double annualInterestRate,
+    required int timePeriodInYears,
+    required double monthlyWithdrawal,
+  }) {
+    // Convert annual interest rate to monthly interest rate
+    double monthlyRate = annualInterestRate / 12 / 100;
+
+    // Total number of months
+    int totalMonths = timePeriodInYears * 12;
+
+    // Future Value Calculation based on the SWP formula
+    double futureValue = 0;
+    for (int month = 1; month <= totalMonths; month++) {
+      // Apply interest before the withdrawal
+      double interest = totalInvestment * monthlyRate;
+
+      // Add interest to the total investment
+      totalInvestment += interest;
+
+      // Deduct the monthly withdrawal
+      if (totalInvestment >= monthlyWithdrawal) {
+        totalInvestment -= monthlyWithdrawal;
+        futureValue += monthlyWithdrawal;
+      } else {
+        // If the remaining balance is less than the monthly withdrawal, withdraw what's left
+        futureValue += totalInvestment;
+        totalInvestment = 0;
+        break; // No more money left to withdraw
+      }
+    }
+
+    // Total withdrawals (total value withdrawn)
+    double totalWithdrawn = futureValue;
+
+    // Total remaining balance after all withdrawals
+    double remainingAmount = totalInvestment;
+
+    return {
+      'totalInvestment': totalInvestment,
+      'totalWithdrawn': totalWithdrawn,
+      'remainingAmount': remainingAmount,
+    };
+  }
+}
